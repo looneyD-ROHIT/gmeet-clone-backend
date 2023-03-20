@@ -42,6 +42,8 @@ model UserMeetMap {
   mappedMeetData MeetData @relation(fields: [mappedMeetId], references: [meetId])
 }
 
+// Message Schema --> stores all the messages along with userId and meetId by referencing
+// them from the Users table and MeetData table respectively
 model Message {
   messageId      Int      @id @unique @default(autoincrement())
   sentTime       DateTime @default(now())

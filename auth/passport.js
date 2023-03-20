@@ -3,7 +3,6 @@ import bcrypt from "bcrypt"
 import { LocalStrategy } from 'passport-local';
 import PrismaClient from '../config/prismaConfig'
 
-const saltround = 12
 
 
 const verify = (username, password, cb) => {

@@ -1,30 +1,33 @@
 import { PrismaClient } from '@prisma/client'
 
-const prisma = new PrismaClient()
+// const prisma = new PrismaClient()
+// console.log(new PrismaClient())
+try{
+    const prisma = new PrismaClient()
+}catch(err){
+    console.log(err)
+}
 
-async function main() {
+// async function main() {
 
 
-    await prisma.MeetData.create({
-        data: {
-            meet_code: 'www',
-        }
-    })
+    
+//     await prisma.Users.create({
+//         data: {
+//             email: 'abc@abc.com',
+//             password: 'abc',
+//         }
+//     })
+    
+//     await prisma.MeetData.create({
+//         data: {
+//             meetCode: 'www',
+//             meetTranscript: null,
+//         }
+//     })
 
-    await prisma.Users.create({
-        data: {
-            email: 'abc@abc.com',
-            password: 'abc',
-            meetDataList: {
-                create: [
-                    'www'
-                ]
-            }
-        }
-    })
+//     const allUsers = await prisma.Users.findMany()
+//     console.log(allUsers)
+//   }
 
-    const allUsers = await prisma.Users.findMany()
-    console.log(allUsers)
-  }
-
-  main();
+//   main();
