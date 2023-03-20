@@ -1,0 +1,53 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "mysql"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// Users Schema
+model Users {
+  userId      Int          @id @unique @default(autoincrement())
+  email       String       @unique
+  password    String
+  createdAt   DateTime     @default(now())
+  lastLogin   DateTime     @default(now())
+  UserMeetMap UserMeetMap?
+  Message     Message?
+}
+
+// MeetData Schema
+model MeetData {
+  meetId         Int          @id @unique @default(autoincrement())
+  meetCode       String       @unique
+  startedAt      DateTime     @default(now())
+  endedAt        DateTime     @default(now())
+  meetTranscript Bytes
+  UserMeetMap    UserMeetMap?
+  Message        Message?
+}
+
+// UserMeetMap Schema --> stores the userId and meetId by referencing them from the
+// Users table and MeetData table respectively
+model UserMeetMap {
+  UserMeetMap    Int      @id @unique
+  mappedUserId   Int      @unique
+  mappedMeetId   Int      @unique
+  mappedUserData Users    @relation(fields: [mappedUserId], references: [userId])
+  mappedMeetData MeetData @relation(fields: [mappedMeetId], references: [meetId])
+}
+
+model Message {
+  messageId      Int      @id @unique @default(autoincrement())
+  sentTime       DateTime @default(now())
+  message_body   String
+  mappedUserId   Int      @unique
+  mappedMeetId   Int      @unique
+  mappedUserData Users    @relation(fields: [mappedUserId], references: [userId])
+  mappedMeetData MeetData @relation(fields: [mappedMeetId], references: [meetId])
+}
