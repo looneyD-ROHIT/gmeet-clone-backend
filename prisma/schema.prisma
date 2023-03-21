@@ -2,7 +2,7 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "mysql"
+  provider = "prisma-client-js"
 }
 
 datasource db {
@@ -27,7 +27,7 @@ model MeetData {
   meetCode       String       @unique
   startedAt      DateTime     @default(now())
   endedAt        DateTime     @default(now())
-  meetTranscript Bytes
+  meetTranscript Bytes?
   UserMeetMap    UserMeetMap?
   Message        Message?
 }
@@ -47,7 +47,7 @@ model UserMeetMap {
 model Message {
   messageId      Int      @id @unique @default(autoincrement())
   sentTime       DateTime @default(now())
-  message_body   String
+  message_body   String @default("")
   mappedUserId   Int      @unique
   mappedMeetId   Int      @unique
   mappedUserData Users    @relation(fields: [mappedUserId], references: [userId])
