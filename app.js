@@ -1,59 +1,49 @@
 // const createError = require('http-errors');
 // const cookieParser = require('cookie-parser');
 import express from 'express';
-import path from 'path';
 import logger from 'morgan';
+import cors from 'cors';
+import cookieParser from 'cookie-parser';
+import verifyJWT from './middleware/verifyJWT.js';
+import corsOptions from './config/corsOptions.js';
+import credentials from './middleware/credentials.js';
+import login from './routes/login.js';
 import register from './routes/register.js';
-import passport from 'passport';
-import {strategy} from './auth/passportConfig.js';
-const PORT = 9000 || process.env.PORT;
-
-import prismaClient from './config/prismaConfig.js'
+import errorHandler from './middleware/errorHandler.js'
 
 
 const app = express();
 
+// middleware for logging purposes
 app.use(logger('tiny'));
+
+// middleware for Access Control Allow Origin, to be called before cors
+app.use(credentials);
+
+// middleware to allow cors only to specific whitelisted origins based on options
+app.use(cors(corsOptions));
+
+// middleware to handle incoming json payload
 app.use(express.json());
+
+// middleware to handle incoming url encoded form data
 app.use(express.urlencoded({ extended: false }));
-// app.use(session({
-//   store: MongoStore.create({ mongoUrl: process.env.DB_URL }),
-//   secret:"abcd",
-//   resave: false,
-//   saveUninitialized: true,
-//   cookie: {
-//       maxAge : 1000 * 60 * 60
-//   }
-// }));
-// app.use(passport.authenticate('session'));
-app.use(passport.initialize())
-// app.use(passport.session())
-passport.use(strategy)
-passport.serializeUser((user, done) => {
-  done(null, { id: user.id });
-});
 
-passport.deserializeUser(async (user, done) => {
-  try{
-    const user = await prismaClient.users.findFirst({
-      where: {
-        userId: user.id,
-      }
-    });
-    if(!user){
-      done(null, false)
-    }
-    done(null,user)
-  }catch(err){
-    console.log('err while deserializing: ', err);
-    done(err, false);
-  }
+// middleware to handle cookies being sent and received
+app.use(cookieParser());
 
-});
-
-
+// public routes
+app.use('/login', login);
 app.use('/register', register);
 
+// protected routes
+app.use(verifyJWT);
+
+
+// middleware to handle errors
+app.use(errorHandler);
+
+const PORT = 9000 || process.env.PORT;
 
 app.listen(PORT, ()=>{
   console.log(`SERVER IS LISTENING IN PORT ${PORT}`)

@@ -14,11 +14,13 @@ datasource db {
 model Users {
   userId      Int          @id @unique @default(autoincrement())
   email       String       @unique
-  password    String
+  password    Bytes
   createdAt   DateTime     @default(now())
   lastLogin   DateTime     @default(now())
+  refreshToken Bytes?
   UserMeetMap UserMeetMap?
   Message     Message?
+  MeetData    MeetData[]
 }
 
 // MeetData Schema
@@ -28,6 +30,8 @@ model MeetData {
   startedAt      DateTime     @default(now())
   endedAt        DateTime     @default(now())
   meetTranscript Bytes?
+  meetAdmin      Int
+  meetAdminData  Users        @relation(fields: [meetAdmin], references: [userId])
   UserMeetMap    UserMeetMap?
   Message        Message?
 }
@@ -47,7 +51,7 @@ model UserMeetMap {
 model Message {
   messageId      Int      @id @unique @default(autoincrement())
   sentTime       DateTime @default(now())
-  message_body   String @default("")
+  message_body   String   @default("")
   mappedUserId   Int      @unique
   mappedMeetId   Int      @unique
   mappedUserData Users    @relation(fields: [mappedUserId], references: [userId])

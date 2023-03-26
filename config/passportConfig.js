@@ -1,7 +1,7 @@
 import passport from "passport";
 import bcrypt from "bcrypt";
 import { LocalStrategy } from "passport-local";
-import prismaClient from "../config/prismaConfig";
+import prismaClient from "./prismaConfig";
 
 const verify = async (email, password, done) => {
   const user = await prismaClient.users.findFirst({
