@@ -1,6 +1,7 @@
 import prismaClient from '../config/prismaConfig.js';
 import bcrypt from 'bcrypt';
 import Jwt from 'jsonwebtoken';
+import { privateKey } from '../config/keyPair.js';
 
 export const loginGETController = (req, res) => {
     res.status(200).send(`<h1>Login Page...</h1>`)
@@ -43,16 +44,16 @@ export const loginPOSTController = async (req, res, next) => {
                     'email': foundUser.email,
                     'id': foundUser.userId
                 },
-                'secret',
-                { expiresIn: '1h' }
+                privateKey,
+                { expiresIn: '1h', algorithm: 'RS256' }
             );
             const newRefreshToken = Jwt.sign(
                 {
                     'email': foundUser.email,
                     'id': foundUser.userId
                 },
-                'secret',
-                { expiresIn: '1d' }
+                privateKey,
+                { expiresIn: '1d', algorithm: 'RS256' }
             );
 
             // console.log('newRefreshToken: ' + newRefreshToken);

@@ -1,4 +1,5 @@
 import Jwt from 'jsonwebtoken';
+import { publicKey } from '../config/keyPair.js';
 
 const verifyJWT = (req, res, next) => {
     const authHeader = req.headers.authorization || req.headers.Authorization;
@@ -8,7 +9,7 @@ const verifyJWT = (req, res, next) => {
     } else {
         const token = authHeader.split(' ')[1];
         // asynchronous version --> callback specified
-        Jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+        Jwt.verify(token, publicKey, { algorithms: ['RS256'] }, (err, decoded) => {
             if (err) {
                 return res.status(403); // invalid token
             } else {

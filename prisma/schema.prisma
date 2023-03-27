@@ -25,13 +25,13 @@ model Users {
 
 // MeetData Schema
 model MeetData {
-  meetId         Int          @id @unique @default(autoincrement())
-  meetCode       String       @unique
-  startedAt      DateTime     @default(now())
-  endedAt        DateTime     @default(now())
+  meetId         Int           @id @unique @default(autoincrement())
+  meetCode       String        @unique
+  startedAt      DateTime      @default(now())
+  endedAt        DateTime      @default(now())
   meetTranscript Bytes?
   meetAdmin      Int
-  meetAdminData  Users        @relation(fields: [meetAdmin], references: [userId])
+  meetAdminData  Users         @relation(fields: [meetAdmin], references: [userId])
   UserMeetMap    UserMeetMap[]
   Message        Message[]
 }
@@ -47,11 +47,12 @@ model RefreshTokens {
 // UserMeetMap Schema --> stores the userId and meetId by referencing them from the
 // Users table and MeetData table respectively
 model UserMeetMap {
-  UserMeetMapId    Int      @id @unique
-  mappedUserId   Int      
-  mappedMeetId   Int      
+  UserMeetMapId  Int      @id @unique
+  mappedUserId   Int
+  mappedMeetId   Int
   mappedUserData Users    @relation(fields: [mappedUserId], references: [userId])
   mappedMeetData MeetData @relation(fields: [mappedMeetId], references: [meetId])
+
   @@unique([mappedUserId, mappedMeetId], name: "userId_meetId_usermeetmap_key")
 }
 
@@ -61,8 +62,8 @@ model Message {
   messageId      Int      @id @unique @default(autoincrement())
   sentTime       DateTime @default(now())
   message_body   String   @default("")
-  mappedUserId   Int      
-  mappedMeetId   Int      
+  mappedUserId   Int
+  mappedMeetId   Int
   mappedUserData Users    @relation(fields: [mappedUserId], references: [userId])
   mappedMeetData MeetData @relation(fields: [mappedMeetId], references: [meetId])
 }

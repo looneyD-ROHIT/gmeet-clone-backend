@@ -1,3 +1,4 @@
+import { publicKey, privateKey } from '../config/keyPair.js';
 import prismaClient from '../config/prismaConfig.js';
 import Jwt from 'jsonwebtoken';
 
@@ -17,13 +18,14 @@ const refreshTokenPOSTController = async (req, res) => {
             },
         })
 
-        // console.log(foundOldRefreshTokenData);
+        console.log(foundOldRefreshTokenData);
 
         // refresh token reuse detected --> if old token is not present in database
         if (!foundOldRefreshTokenData) {
             Jwt.verify(
                 oldRefreshToken,
-                'secret',
+                publicKey,
+                { algorithms: ['RS256'] },
                 async (err, decodedData) => {
                     if (err) {
                         // forbidden request
@@ -57,7 +59,8 @@ const refreshTokenPOSTController = async (req, res) => {
             })
             Jwt.verify(
                 oldRefreshToken,
-                'secret',
+                publicKey,
+                { algorithms: ['RS256'] },
                 async (err, decodedData) => {
                     const foundUserWithOldRefreshToken = await prismaClient.users.findUnique({
                         where: {
@@ -78,16 +81,16 @@ const refreshTokenPOSTController = async (req, res) => {
                             'email': foundUserWithOldRefreshToken.email,
                             'id': foundUserWithOldRefreshToken.userId
                         },
-                        'secret',
-                        { expiresIn: '1h' }
+                        privateKey,
+                        { expiresIn: '1h', algorithm: 'RS256' }
                     );
                     const newRefreshToken = Jwt.sign(
                         {
                             'email': foundUserWithOldRefreshToken.email,
                             'id': foundUserWithOldRefreshToken.userId
                         },
-                        'secret',
-                        { expiresIn: '1d' }
+                        privateKey,
+                        { expiresIn: '1d', algorithm: 'RS256' }
                     );
 
                     // Saving newRefreshToken with foundUserWithOldRefreshToken
