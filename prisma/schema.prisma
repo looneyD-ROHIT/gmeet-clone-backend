@@ -12,15 +12,15 @@ datasource db {
 
 // Users Schema
 model Users {
-  userId      Int          @id @unique @default(autoincrement())
-  email       String       @unique
-  password    Bytes
-  createdAt   DateTime     @default(now())
-  lastLogin   DateTime     @default(now())
-  refreshToken Bytes?
-  UserMeetMap UserMeetMap?
-  Message     Message?
-  MeetData    MeetData[]
+  userId        Int            @id @unique @default(autoincrement())
+  email         String         @unique
+  password      Bytes
+  createdAt     DateTime       @default(now())
+  lastLogin     DateTime       @default(now())
+  UserMeetMap   UserMeetMap?
+  Message       Message?
+  MeetData      MeetData[]
+  RefreshTokens RefreshTokens?
 }
 
 // MeetData Schema
@@ -34,6 +34,14 @@ model MeetData {
   meetAdminData  Users        @relation(fields: [meetAdmin], references: [userId])
   UserMeetMap    UserMeetMap?
   Message        Message?
+}
+
+// refresh tokens list
+model RefreshTokens {
+  refreshTokenId   Int    @id @unique @default(autoincrement())
+  refreshToken     Bytes?
+  rtMappedUserId   Int    @unique
+  rtMappedUserData Users  @relation(fields: [rtMappedUserId], references: [userId])
 }
 
 // UserMeetMap Schema --> stores the userId and meetId by referencing them from the

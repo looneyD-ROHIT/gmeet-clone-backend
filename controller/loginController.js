@@ -7,6 +7,10 @@ export const loginGETController = (req, res) => {
 }
 
 export const loginPOSTController = async (req, res, next) => {
+    // checking for the available cookies
+    const cookies = req.cookies;
+    console.log(`cookie available at login: ${JSON.stringify(cookies)}`);
+
     const email = req.body.email
     const password = req.body.password
     /**
@@ -50,6 +54,12 @@ export const loginPOSTController = async (req, res, next) => {
                 'secret',
                 { expiresIn: '1d' }
             );
+
+            if (cookies?.jwt) {
+                // if jwt exists in the cookie, then check its existence in the db
+                // if found, then it is asking for refresh
+                // else if not found, then it is compromised and reuse is detected
+            }
 
             // Saving refreshToken with found user
             const updatedUser = await prismaClient.users.update({
