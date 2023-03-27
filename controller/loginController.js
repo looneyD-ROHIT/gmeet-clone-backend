@@ -46,7 +46,7 @@ export const loginPOSTController = async (req, res, next) => {
                 'secret',
                 { expiresIn: '1h' }
             );
-            const refreshToken = Jwt.sign(
+            const newRefreshToken = Jwt.sign(
                 {
                     'email': foundUser.email,
                     'id': foundUser.userId
@@ -55,18 +55,55 @@ export const loginPOSTController = async (req, res, next) => {
                 { expiresIn: '1d' }
             );
 
+            console.log('newRefreshToken: ' + newRefreshToken);
+
             if (cookies?.jwt) {
                 // if jwt exists in the cookie, then check its existence in the db
-                // if found, then it is asking for refresh
-                // else if not found, then it is compromised and reuse is detected
+                const response = await prismaClient.refreshTokens.findUnique({
+                    where: { refreshToken: cookies.jwt }
+                })
+
+                console.log('db response to cookie.jwt: ' + JSON.stringify(response));
+                // if found, then it is asking for refresh, so only remove the current token
+                // for the user
+                if (response) {
+                    // deleting the current token
+                    await prismaClient.refreshTokens.delete({
+                        where: {
+                            refreshToken: cookies.jwt
+                        }
+                    })
+                }
+                // else if not found, then it is compromised and reuse is detected, hence
+                // empty the tokens
+                else {
+                    // delete all the tokens associated with current user
+                    await prismaClient.refreshTokens.deleteMany({
+                        where: {
+                            rtMappedUserId: foundUser.userId
+                        }
+                    })
+                    // res.clearCookie('jwt', { httpOnly: true, sameSite: 'None', secure: true });
+                }
             }
 
-            // Saving refreshToken with found user
-            const updatedUser = await prismaClient.users.update({
-                where: { userId: foundUser.userId },
-                data: { refreshToken: Buffer.from(refreshToken) }
-            });
-            console.log('updatedUser: ' + JSON.stringify(updatedUser));
+            // before saving check device limit
+            const allTokens = await prismaClient.refreshTokens.findMany({
+                where: {
+                    rtMappedUserId: foundUser.userId
+                }
+            })
+            if (allTokens.length >= 5) {
+                return res.status(500).json({ 'success': false, 'message': 'More than 5 user logins not allowed!!!' });
+            }
+            // Saving newRefreshToken with found user
+            const newRefreshTokenResponse = await prismaClient.refreshTokens.create({
+                data: {
+                    refreshToken: newRefreshToken,
+                    rtMappedUserId: foundUser.userId
+                }
+            })
+            console.log('newRefreshTokenResponse: ' + JSON.stringify(newRefreshTokenResponse));
 
             // Creates Secure Cookie with refresh token
             // res.cookie('jwt', refreshToken, { httpOnly: true, secure: true, sameSite: 'None', maxAge: 24 * 60 * 60 * 1000 });

@@ -12,15 +12,15 @@ datasource db {
 
 // Users Schema
 model Users {
-  userId        Int            @id @unique @default(autoincrement())
-  email         String         @unique
+  userId        Int             @id @unique @default(autoincrement())
+  email         String          @unique
   password      Bytes
-  createdAt     DateTime       @default(now())
-  lastLogin     DateTime       @default(now())
-  UserMeetMap   UserMeetMap?
-  Message       Message?
+  createdAt     DateTime        @default(now())
+  lastLogin     DateTime        @default(now())
+  UserMeetMap   UserMeetMap[]
+  Message       Message[]
   MeetData      MeetData[]
-  RefreshTokens RefreshTokens?
+  RefreshTokens RefreshTokens[]
 }
 
 // MeetData Schema
@@ -32,26 +32,27 @@ model MeetData {
   meetTranscript Bytes?
   meetAdmin      Int
   meetAdminData  Users        @relation(fields: [meetAdmin], references: [userId])
-  UserMeetMap    UserMeetMap?
-  Message        Message?
+  UserMeetMap    UserMeetMap[]
+  Message        Message[]
 }
 
 // refresh tokens list
 model RefreshTokens {
   refreshTokenId   Int    @id @unique @default(autoincrement())
-  refreshToken     Bytes?
-  rtMappedUserId   Int    @unique
+  refreshToken     String @unique @db.VarChar(512)
+  rtMappedUserId   Int
   rtMappedUserData Users  @relation(fields: [rtMappedUserId], references: [userId])
 }
 
 // UserMeetMap Schema --> stores the userId and meetId by referencing them from the
 // Users table and MeetData table respectively
 model UserMeetMap {
-  UserMeetMap    Int      @id @unique
-  mappedUserId   Int      @unique
-  mappedMeetId   Int      @unique
+  UserMeetMapId    Int      @id @unique
+  mappedUserId   Int      
+  mappedMeetId   Int      
   mappedUserData Users    @relation(fields: [mappedUserId], references: [userId])
   mappedMeetData MeetData @relation(fields: [mappedMeetId], references: [meetId])
+  @@unique([mappedUserId, mappedMeetId], name: "userId_meetId_usermeetmap_key")
 }
 
 // Message Schema --> stores all the messages along with userId and meetId by referencing
@@ -60,8 +61,8 @@ model Message {
   messageId      Int      @id @unique @default(autoincrement())
   sentTime       DateTime @default(now())
   message_body   String   @default("")
-  mappedUserId   Int      @unique
-  mappedMeetId   Int      @unique
+  mappedUserId   Int      
+  mappedMeetId   Int      
   mappedUserData Users    @relation(fields: [mappedUserId], references: [userId])
   mappedMeetData MeetData @relation(fields: [mappedMeetId], references: [meetId])
 }
