@@ -9,7 +9,7 @@ export const loginGETController = (req, res) => {
 export const loginPOSTController = async (req, res, next) => {
     // checking for the available cookies
     const cookies = req.cookies;
-    console.log(`cookie available at login: ${JSON.stringify(cookies)}`);
+    // console.log(`cookie available at login: ${JSON.stringify(cookies)}`);
 
     const email = req.body.email
     const password = req.body.password
@@ -31,7 +31,7 @@ export const loginPOSTController = async (req, res, next) => {
         if (!foundUser) {
             return res.status(404).json({ 'success': false, 'message': 'user doesn\'t exist' });
         }
-        console.log('foundUser: ' + JSON.stringify(foundUser));
+        // console.log('foundUser: ' + JSON.stringify(foundUser));
         const foundPassword = foundUser.password.toString();
 
         const match = bcrypt.compare(password, foundPassword);
@@ -55,7 +55,7 @@ export const loginPOSTController = async (req, res, next) => {
                 { expiresIn: '1d' }
             );
 
-            console.log('newRefreshToken: ' + newRefreshToken);
+            // console.log('newRefreshToken: ' + newRefreshToken);
 
             if (cookies?.jwt) {
                 // if jwt exists in the cookie, then check its existence in the db
@@ -63,7 +63,7 @@ export const loginPOSTController = async (req, res, next) => {
                     where: { refreshToken: cookies.jwt }
                 })
 
-                console.log('db response to cookie.jwt: ' + JSON.stringify(response));
+                // console.log('db response to cookie.jwt: ' + JSON.stringify(response));
                 // if found, then it is asking for refresh, so only remove the current token
                 // for the user
                 if (response) {
@@ -103,12 +103,12 @@ export const loginPOSTController = async (req, res, next) => {
                     rtMappedUserId: foundUser.userId
                 }
             })
-            console.log('newRefreshTokenResponse: ' + JSON.stringify(newRefreshTokenResponse));
+            // console.log('newRefreshTokenResponse: ' + JSON.stringify(newRefreshTokenResponse));
 
             // Creates Secure Cookie with refresh token
-            // res.cookie('jwt', refreshToken, { httpOnly: true, secure: true, sameSite: 'None', maxAge: 24 * 60 * 60 * 1000 });
+            res.cookie('jwt', newRefreshToken, { httpOnly: true, secure: true, maxAge: 24 * 60 * 60 * 1000 });
 
-            // Send authorization roles and access token to user
+            // Send access token to user
             return res.status(200).json({ 'success': true, 'message': 'logged in successfully', accessToken });
         } else {
             return res.status(401).json({ 'success': false, 'message': 'wrong password entered' });; // unauthorized user

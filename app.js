@@ -9,6 +9,8 @@ import corsOptions from './config/corsOptions.js';
 import credentials from './middleware/credentials.js';
 import login from './routes/login.js';
 import register from './routes/register.js';
+import fallback from './routes/fallback.js';
+import refresh from './routes/refresh.js';
 import errorHandler from './middleware/errorHandler.js'
 
 
@@ -36,15 +38,22 @@ app.use(cookieParser());
 app.use('/login', login);
 app.use('/register', register);
 
-// protected routes
-app.use(verifyJWT);
+// refresh token route, hidden route
+app.use('/refresh', refresh);
 
+
+// protected routes
+// app.use(verifyJWT);
+
+
+// fallback route
+app.all('*', fallback);
 
 // middleware to handle errors
 app.use(errorHandler);
 
 const PORT = 9000 || process.env.PORT;
 
-app.listen(PORT, ()=>{
+app.listen(PORT, () => {
   console.log(`SERVER IS LISTENING IN PORT ${PORT}`)
 })

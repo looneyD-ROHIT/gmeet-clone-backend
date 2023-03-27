@@ -12,18 +12,17 @@ export const registerPOSTController = (req, res) => {
      * TODO 
      * Apply more validation to email and password field, either on frontend or backend.
      */
-    if(!email || !password){
-        res.status(400);
-        return res.json({'success': false, 'message': 'email and password both are required!'});
-    } 
-    
-    bcrypt.hash(password, 10000, async (err, hash)=>{
-        if(err){
+    if (!email || !password) {
+        return res.status(400).json({ 'success': false, 'message': 'email and password both are required!' });
+    }
+
+    bcrypt.hash(password, 10000, async (err, hash) => {
+        if (err) {
             console.log(err);
-            return res.status(500).json({'success': false, 'message': 'server error hashing the password!'})
+            return res.status(500).json({ 'success': false, 'message': 'server error hashing the password!' })
         }
-        else{
-            try{
+        else {
+            try {
                 const response = await prismaClient.users.create({
                     data: {
                         email: email,
@@ -31,10 +30,10 @@ export const registerPOSTController = (req, res) => {
                     },
                 })
                 console.log(response);
-                return res.status(201).json({'success': true, 'message': 'user registered successfully!'})
-            }catch(err){
-                console.log('err while registering: ',err);
-                return res.status(505).json({'success': false, 'message': 'server error registering user'})
+                return res.status(201).json({ 'success': true, 'message': 'user registered successfully!' })
+            } catch (err) {
+                console.log('err while registering: ', err);
+                return res.status(505).json({ 'success': false, 'message': 'server error registering user' })
             }
         }
     })
