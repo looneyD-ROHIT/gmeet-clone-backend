@@ -13,6 +13,8 @@ datasource db {
 // Users Schema
 model Users {
   userId        Int             @id @unique @default(autoincrement())
+  firstName     String
+  lastName      String
   email         String          @unique
   password      Bytes
   createdAt     DateTime        @default(now())
