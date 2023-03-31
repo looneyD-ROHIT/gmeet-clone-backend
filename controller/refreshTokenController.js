@@ -4,12 +4,18 @@ import Jwt from 'jsonwebtoken';
 
 const refreshTokenPOSTController = async (req, res) => {
     const cookies = req.cookies;
+    console.log('refreshToken: ');
+    console.log(cookies);
+    console.log(cookies.jwt)
+
     if (!cookies || !(cookies.jwt)) {
-        return res.status(401).json({ 'success': false, 'message': 'No refresh tokens exist, login to get one' })
+        console.log('No refresh tokens exist, login to get one');
+        return res.status(505).json({ 'success': false, 'message': 'No refresh tokens exist, login to get one' })
     }
     const oldRefreshToken = cookies.jwt;
+    console.log(oldRefreshToken);
     // clear the oldRefreshToken from the browser cookies
-    // res.clearCookie('jwt', { httpOnly: true, sameSite: 'None', secure: true });
+    res.clearCookie('jwt', { httpOnly: true, secure: true });
     // console.log(oldRefreshToken);
     try {
         const foundOldRefreshTokenData = await prismaClient.refreshTokens.findUnique({
@@ -29,7 +35,8 @@ const refreshTokenPOSTController = async (req, res) => {
                 async (err, decodedData) => {
                     if (err) {
                         // forbidden request
-                        return res.status(403).json({ 'success': false, 'message': 'JWT expired, but reused!!!' });
+                        console.log('JWT expired, but reused!!!');
+                        return res.status(511).json({ 'success': false, 'message': 'JWT expired, but reused!!!' });
                     }
                     // forbidden request, but token not expired --> make the user safe
                     // by removing all refresh tokens
@@ -47,7 +54,8 @@ const refreshTokenPOSTController = async (req, res) => {
                         })
                         console.log(compromiseRespose);
                     }
-                    return res.status(403).json({ 'success': false, 'message': 'JWT did not expire, but reused (user compromised)!!!' });
+                    console.log('JWT did not expire, but reused (user compromised)!!!');
+                    return res.status(511).json({ 'success': false, 'message': 'JWT did not expire, but reused (user compromised)!!!' });
                 }
             )
         } else {
@@ -72,7 +80,8 @@ const refreshTokenPOSTController = async (req, res) => {
                     if (err || foundUserWithOldRefreshToken.email !== decodedData.email) {
                         // unauthorized user --> jwt not expired, still in db, but, assigned
                         // to different user coincidentally
-                        return res.status(403).json({ 'success': false, 'message': 'JWT did not expire, but assigned to some different user' });
+                        console.log('JWT either expired or assigned to some different user')
+                        return res.status(511).json({ 'success': false, 'message': 'JWT either expired or assigned to some different user' });
                     }
 
                     // oldRefreshToken is still valid --> reassign new token (rotation)
@@ -82,7 +91,7 @@ const refreshTokenPOSTController = async (req, res) => {
                             'id': foundUserWithOldRefreshToken.userId
                         },
                         privateKey,
-                        { expiresIn: '1h', algorithm: 'RS256' }
+                        { expiresIn: '2h', algorithm: 'RS256' }
                     );
                     const newRefreshToken = Jwt.sign(
                         {
@@ -90,7 +99,7 @@ const refreshTokenPOSTController = async (req, res) => {
                             'id': foundUserWithOldRefreshToken.userId
                         },
                         privateKey,
-                        { expiresIn: '1d', algorithm: 'RS256' }
+                        { expiresIn: '3d', algorithm: 'RS256' }
                     );
 
                     // Saving newRefreshToken with foundUserWithOldRefreshToken
@@ -103,15 +112,15 @@ const refreshTokenPOSTController = async (req, res) => {
                     console.log(newRefreshTokenResponse);
 
                     // Creates Secure Cookie with refresh token
-                    // res.cookie('jwt', newRefreshToken, { httpOnly: true, secure: true, sameSite: 'None', maxAge: 24 * 60 * 60 * 1000 });
+                    res.cookie('jwt', newRefreshToken, { httpOnly: true, secure: true, maxAge: 24 * 60 * 60 * 1000 });
 
-                    return res.status(200).json({ 'success': true, 'message': 'Refreshed tokens successfully', accessToken });
+                    return res.status(200).json({ 'success': true, 'message': 'Refreshed tokens successfully', accessToken, id: foundUserWithOldRefreshToken.userId });
                 }
             )
         }
     } catch (err) {
         console.error('Error finding token: ' + err)
-        return res.status(401).json({ 'success': false, 'message': 'server error in finding old token data' });; // unauthorized user
+        return res.status(511).json({ 'success': false, 'message': 'server error in finding old token data' });; // unauthorized user
     }
 }
 

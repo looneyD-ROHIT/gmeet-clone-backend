@@ -10,17 +10,19 @@ export const loginGETController = (req, res) => {
 export const loginPOSTController = async (req, res, next) => {
     // checking for the available cookies
     const cookies = req.cookies;
+    console.log(cookies)
     // console.log(`cookie available at login: ${JSON.stringify(cookies)}`);
 
     const email = req.body.email
     const password = req.body.password
+    console.log(email)
+    console.log(password)
     /**
      * TODO 
      * Apply more validation to email and password field, either on frontend or backend.
      */
     if (!email || !password) {
-        res.status(400);
-        return res.json({ 'success': false, 'message': 'email and password both are required!' });
+        return res.status(400).json({ 'success': false, 'message': 'email and password both are required!' });
     }
 
     try {
@@ -45,7 +47,7 @@ export const loginPOSTController = async (req, res, next) => {
                     'id': foundUser.userId
                 },
                 privateKey,
-                { expiresIn: '1h', algorithm: 'RS256' }
+                { expiresIn: '2h', algorithm: 'RS256' }
             );
             const newRefreshToken = Jwt.sign(
                 {
@@ -53,7 +55,7 @@ export const loginPOSTController = async (req, res, next) => {
                     'id': foundUser.userId
                 },
                 privateKey,
-                { expiresIn: '1d', algorithm: 'RS256' }
+                { expiresIn: '3d', algorithm: 'RS256' }
             );
 
             // console.log('newRefreshToken: ' + newRefreshToken);
@@ -84,11 +86,13 @@ export const loginPOSTController = async (req, res, next) => {
                             rtMappedUserId: foundUser.userId
                         }
                     })
-                    // res.clearCookie('jwt', { httpOnly: true, sameSite: 'None', secure: true });
+                    res.clearCookie('jwt', { httpOnly: true, secure: true });
                 }
             }
 
+
             // before saving check device limit
+            /*
             const allTokens = await prismaClient.refreshTokens.findMany({
                 where: {
                     rtMappedUserId: foundUser.userId
@@ -97,6 +101,8 @@ export const loginPOSTController = async (req, res, next) => {
             if (allTokens.length >= 5) {
                 return res.status(500).json({ 'success': false, 'message': 'More than 5 user logins not allowed!!!' });
             }
+            */
+
             // Saving newRefreshToken with found user
             const newRefreshTokenResponse = await prismaClient.refreshTokens.create({
                 data: {
@@ -110,7 +116,7 @@ export const loginPOSTController = async (req, res, next) => {
             res.cookie('jwt', newRefreshToken, { httpOnly: true, secure: true, maxAge: 24 * 60 * 60 * 1000 });
 
             // Send access token to user
-            return res.status(200).json({ 'success': true, 'message': 'logged in successfully', accessToken });
+            return res.status(200).json({ 'success': true, 'message': 'logged in successfully', accessToken, id: foundUser.userId });
         } else {
             return res.status(401).json({ 'success': false, 'message': 'wrong password entered' });; // unauthorized user
         }

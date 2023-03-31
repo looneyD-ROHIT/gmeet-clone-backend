@@ -6,8 +6,10 @@ export const registerGETController = (req, res) => {
 }
 
 export const registerPOSTController = (req, res) => {
-    const email = req.body.email
-    const password = req.body.password
+    const firstName = req.body.firstName;
+    const lastName = req.body.lastName;
+    const email = req.body.email;
+    const password = req.body.password;
     /**
      * TODO 
      * Apply more validation to email and password field, either on frontend or backend.
@@ -25,7 +27,9 @@ export const registerPOSTController = (req, res) => {
             try {
                 const response = await prismaClient.users.create({
                     data: {
-                        email: email,
+                        firstName,
+                        lastName,
+                        email,
                         password: Buffer.from(hash)
                     },
                 })
