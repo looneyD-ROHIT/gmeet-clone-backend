@@ -2,8 +2,10 @@ import allowedOrigins from './allowedOrigins.js';
 
 const corsOptions = {
     origin: (origin, done) => {
+        // console.log(origin);
         if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
-            done(null, true)
+            console.log(origin);
+            done(null, true);
         } else {
             done(new Error('Not allowed due to CORS...'));
         }

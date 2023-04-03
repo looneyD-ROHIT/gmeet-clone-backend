@@ -1,5 +1,5 @@
 const fallbackMETHODController = (req, res) => {
-    console.log('hi')
+    // console.log('hi')
     return res.json({ 'success': false, 'message': 'Not found, what you are looking for!!!' });
     if (req.accepts('application/json')) {
         return res.status(404).json({ 'success': false, 'message': 'Not found, what you are looking for!!!' });

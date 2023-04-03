@@ -9,6 +9,12 @@ const allowedOrigins = [
     'http://127.0.0.1:5176',
     'http://localhost:9000',
     'http://127.0.0.1:9000',
+    "https://admin.socket.io",
+    "https://admin.socket.io/",
+    'https://admin.socket.io/#',
+    'https://admin.socket.io/#/',
+    'https://meetclone.vercel.app',
+    'https://meetclonetest.vercel.app',
 ];
 
 export default allowedOrigins;
