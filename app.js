@@ -2,7 +2,7 @@
 // const cookieParser = require('cookie-parser');
 import express from 'express';
 import http from 'http';
-import {Server} from "socket.io";
+import { Server } from "socket.io";
 import { instrument } from "@socket.io/admin-ui";
 import logger from 'morgan';
 import cors from 'cors';
@@ -23,13 +23,12 @@ import allowedOrigins from "./config/allowedOrigins.js";
 
 
 const app = express();
-const server = http.createServer(app);
 
 // middleware to prevent browser caching always
-app.use((req, res, next) => {
-  res.set('Cache-Control', 'no-store')
-  next()
-})
+// app.use((req, res, next) => {
+//   res.set('Cache-Control', 'no-store')
+//   next()
+// })
 
 // middleware for logging purposes
 app.use(logger('tiny'));
@@ -42,29 +41,6 @@ app.use(credentials);
 
 // middleware to allow cors only to specific whitelisted origins based on options
 app.use(cors(corsOptions));
-
-
-// socket initialization
-const io = new Server(server)
-
-// enabling the admin panel for socketio
-// instrument(io, {
-//   auth: false,
-//   mode: 'development'
-// })
-
-io.on('connection', (socket)=>{
-  console.log('User Connected: '+socket.id);
-  socket.on('message', (data)=>{
-    console.log(data);
-  })
-  socket.on('disconnect', ()=>{
-    console.log('disconnected')
-  })
-  socket.on("disconnect", () => {
-    console.log("Client disconnected");
-  });
-})
 
 // middleware to handle incoming json payload
 app.use(express.json());
@@ -97,9 +73,24 @@ app.all('*', fallback);
 // middleware to handle errors
 app.use(errorHandler);
 
+
+
+const server = http.createServer(app);
+
+// socket io initialization
+const io = new Server(server, {
+  cors: {
+    origin: ['http://localhost:5173', 'http://127.0.0.1:5173', 'https://admin.socket.io/'],
+    credentials: true
+  }
+})
+
+io.on('connection', (socket) => {
+  console.log('User Connected: ' + socket.id);
+})
+
 const PORT = 9000 || process.env.PORT;
 
-
-app.listen(PORT, '127.0.0.1',() => {
+server.listen(PORT, () => {
   console.log(`SERVER IS LISTENING IN PORT ${PORT}`)
 })
