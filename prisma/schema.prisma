@@ -49,7 +49,7 @@ model RefreshTokens {
 // UserMeetMap Schema --> stores the userId and meetId by referencing them from the
 // Users table and MeetData table respectively
 model UserMeetMap {
-  UserMeetMapId  Int      @id @unique
+  UserMeetMapId  Int      @id @unique @default(autoincrement())
   mappedUserId   Int
   mappedMeetId   Int
   mappedUserData Users    @relation(fields: [mappedUserId], references: [userId])

@@ -2,8 +2,7 @@
 // const cookieParser = require('cookie-parser');
 import express from 'express';
 import http from 'http';
-import { Server } from "socket.io";
-import { instrument } from "@socket.io/admin-ui";
+import socketInitialisation from './config/socketConfig.js'
 import logger from 'morgan';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -25,16 +24,23 @@ import allowedOrigins from "./config/allowedOrigins.js";
 const app = express();
 
 // middleware to prevent browser caching always
-// app.use((req, res, next) => {
-//   res.set('Cache-Control', 'no-store')
-//   next()
-// })
+app.use((req, res, next) => {
+  res.set('Cache-Control', 'no-store')
+  next()
+})
 
 // middleware for logging purposes
 app.use(logger('tiny'));
 
 // provide suitable headers to secure the express app
 app.use(helmet());
+// app.use(helmet.contentSecurityPolicy({
+//   directives: {
+//     defaultSrc: ["'self'"],
+//     connectSrc: ["ws://localhost:1337", "ws://localhost:9000", "http://localhost:9000"],
+//     imgSrc: ["'self'", "https://images.unsplash.com", "https://placekitten.com/100/100", "data:"]
+//   }
+// }));
 
 // middleware for Access Control Allow Origin, to be called before cors
 app.use(credentials);
@@ -50,6 +56,9 @@ app.use(express.urlencoded({ extended: false }));
 
 // middleware to handle cookies being sent and received
 app.use(cookieParser());
+
+// for static file serving
+// app.use(express.static('dist'))
 
 // public routes
 app.use('/login', login);
@@ -73,21 +82,11 @@ app.all('*', fallback);
 // middleware to handle errors
 app.use(errorHandler);
 
-
-
+// http server initialisation
 const server = http.createServer(app);
 
-// socket io initialization
-const io = new Server(server, {
-  cors: {
-    origin: ['http://localhost:5173', 'http://127.0.0.1:5173', 'https://admin.socket.io/'],
-    credentials: true
-  }
-})
-
-io.on('connection', (socket) => {
-  console.log('User Connected: ' + socket.id);
-})
+// socket initialisation
+socketInitialisation(server);
 
 const PORT = 9000 || process.env.PORT;
 
