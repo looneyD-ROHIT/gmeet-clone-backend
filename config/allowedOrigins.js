@@ -12,7 +12,7 @@ const allowedOrigins = [
     'https://admin.socket.io/',
     'https://meetclone.vercel.app',
     'https://meetclonetest.vercel.app',
-    'https://5626-45-116-190-225.ngrok-free.app',
+    'https://mytestapp-two.vercel.app/',
 ];
 
 export default allowedOrigins;

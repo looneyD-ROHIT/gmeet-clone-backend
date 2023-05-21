@@ -19,6 +19,7 @@ import logout from './routes/logout.js';
 import ping from './routes/ping.js';
 import errorHandler from './middleware/errorHandler.js'
 import allowedOrigins from "./config/allowedOrigins.js";
+import { PeerServer } from 'peer';
 
 
 const app = express();
@@ -76,8 +77,6 @@ app.use('/logout', verifyJWT, logout);
 // hidden route requiring authentication --> to check user login status when idle
 app.use('/ping', verifyJWT, ping);
 
-// fallback route
-app.all('*', fallback);
 
 // middleware to handle errors
 app.use(errorHandler);
@@ -87,6 +86,12 @@ const server = http.createServer(app);
 
 // socket initialisation
 socketInitialisation(server);
+
+// peer server initialization
+const peerServer = PeerServer({ port: 6969, path: "/peerjs", debug: true });
+
+// fallback route
+app.all('*', fallback);
 
 const PORT = 9000 || process.env.PORT;
 
