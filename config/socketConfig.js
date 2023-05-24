@@ -25,12 +25,13 @@ const socketInitialisation = (server) => {
             console.log(usersListParsed);
             usersListParsed.push(socket.peerId);
             const usersSetParsed = new Set(usersListParsed);
+            io.to(meetcode).emit('get-users', Array.from(usersSetParsed));
             await redisClient.set(meetcode, JSON.stringify(Array.from(usersSetParsed)));
             await redisClient.set(socket.peerId, meetcode);
             console.log('broadcasting peerId');
             socket.broadcast.to(meetcode).emit('joined-meet', peerId);
             console.log('broadcasted peerId');
-            socket.emit('get-users', Array.from(usersSetParsed));
+            // socket.emit('get-users', Array.from(usersSetParsed));
             console.log(`joined room successfully!!! [${socket.peerId} --> ${meetcode}]`);
         })
         socket.on('disconnect', async () => {

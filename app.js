@@ -19,6 +19,7 @@ import logout from './routes/logout.js';
 import ping from './routes/ping.js';
 import errorHandler from './middleware/errorHandler.js'
 import allowedOrigins from "./config/allowedOrigins.js";
+import { PeerServer } from 'peer';
 
 
 const app = express();
@@ -84,6 +85,8 @@ app.use(errorHandler);
 
 // http server initialisation
 const server = http.createServer(app);
+
+const peerServer = PeerServer({ port: 6969, path: "/peerjs" });
 
 // socket initialisation
 socketInitialisation(server);
