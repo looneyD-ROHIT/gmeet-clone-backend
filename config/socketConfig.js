@@ -51,6 +51,9 @@ const socketInitialisation = (server) => {
             await redisClient.del(socket.peerId);
             socket.broadcast.to(meetcode).emit('user-disconnected', socket.peerId);
         })
+        socket.on('stream-change', (meetcode, data) => {
+            socket.broadcast.to(meetcode).emit('stream-change', socket.peerId, data);
+        });
         socket.on("update-stream", (meetcode, peerId) => {
             socket.broadcast.to(meetcode).emit('user-disconnected', peerId);
             socket.broadcast.to(meetcode).emit('joined-meet', peerId);
